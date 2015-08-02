@@ -1,39 +1,30 @@
 (ns theater.core
-  (require [quil.core :as q]))
+  (:require [quil.core :as q]
+            [theater.audio :as audio]))
+
+(def frames (atom (audio/load-frames "/tmp/select.wav")))
 
 (defn setup []
   (q/smooth)
-  (q/frame-rate 60)
-  (q/background 128))
-
-(defn fill-screen [& colors]
-  (q/stroke-weight 0)
-  (apply q/fill colors)
-  (q/rect 0 0 (q/width) (q/height)))
-
-(defn draw-random-horizontal-line []
-  (let [y (q/random (q/height))]
-    (q/line 0 y (q/width) y)))
-
-(defn draw-random-vertical-line []
-  (let [x (q/random (q/width))]
-    (q/line x 0 x (q/height))))
-
-(defn draw-random-line []
-  (if (< (q/random) 0.5)
-    (draw-random-horizontal-line)
-    (draw-random-vertical-line)))
-
-(defn draw-random-lines [count]
-  (doseq [_ (range count)]
-    (draw-random-line)))
+  (q/frame-rate 15)
+  (q/background 0))
 
 (defn draw []
-  ;(q/random-seed 0)
-  ;(fill-screen 0)
+  (q/fill 0)
+  (q/stroke-weight 0)
+  (q/rect 0 0 (q/width) (q/height))
   (q/stroke 255)
-  (q/stroke-weight 10)
-  (draw-random-line))
+  (q/stroke-weight 2)
+  (let [frames (take (q/width) @frames)]
+    (doseq [[x [frame next-frame]] (->> (interleave frames frames)
+                                        rest
+                                        (partition 2)
+                                        (map-indexed vector))]
+      (q/line x
+              (* (first frame) (q/height))
+              (inc x)
+              (* (first next-frame) (q/height)))))
+  (swap! frames #(drop (/ 44100 15) %)))
 
 (q/sketch
  :setup setup
