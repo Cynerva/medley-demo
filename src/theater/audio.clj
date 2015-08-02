@@ -3,11 +3,10 @@
   (:import [java.io File]
            [javax.sound.sampled AudioSystem]))
 
-(defn ffmpeg [& args]
-  (apply sh "ffmpeg" args))
-
 (defn load-stream [path]
-  (AudioSystem/getAudioInputStream (File. path)))
+  (let [file (File/createTempFile "theater" ".wav")]
+    (sh "ffmpeg" "-i" path (.getAbsolutePath file) "-y")
+    (AudioSystem/getAudioInputStream file)))
 
 (defn bytes->uint [bytes]
   (loop [bytes (reverse bytes) sum 0]
