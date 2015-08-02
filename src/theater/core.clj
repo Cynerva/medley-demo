@@ -16,9 +16,7 @@
   (q/stroke 255)
   (q/stroke-weight 2)
   (let [frames (take (q/width) @frames)]
-    (doseq [[x [frame next-frame]] (->> (interleave frames frames)
-                                        rest
-                                        (partition 2)
+    (doseq [[x [frame next-frame]] (->> (map vector frames (rest frames))
                                         (map-indexed vector))]
       (q/line x
               (* (first frame) (q/height))
