@@ -39,12 +39,11 @@
 (defn load-frames [path]
   (read-frames! (load-stream path)))
 
-(defn read-audio-info [stream]
+(defn read-info [stream]
   (let [frame-rate (-> stream .getFormat .getFrameRate)]
     {:duration (/ (.getFrameLength stream) frame-rate)
-     :frame-rate frame-rate
-     :frames (read-frames! stream)}))
+     :frame-rate frame-rate}))
 
-(defn load-audio-info [path]
-  (assoc (read-audio-info (load-stream path))
+(defn load-info [path]
+  (assoc (read-info (load-stream path))
     :path path))

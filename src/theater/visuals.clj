@@ -33,5 +33,5 @@
                 (inc x)
                 (* (first next-frame) (q/height)))))))
 
-(defn new-scope [audio-frames]
+(defn make-scope [audio-frames]
   (Scope. audio-frames))

@@ -1,51 +1,61 @@
 (ns theater.core
   (:require [clojure.java.shell :refer [sh]]
             [quil.core :as q]
-            [theater.audio :refer [load-audio-info]]
+            [theater.audio :as audio]
             [theater.visuals :as visuals]))
 
 (def frame-rate 15)
+(def resolution [1366 768])
 
 (defn setup []
   (q/smooth)
   (q/frame-rate frame-rate))
 
 (defn sketch [draw-fn]
-  (q/sketch
-   :setup setup
-   :draw draw-fn
-   :size [1366 768]))
+  (let [finished (promise)]
+    (q/sketch
+     :setup setup
+     :draw draw-fn
+     :size resolution
+     :on-close #(deliver finished nil))
+    @finished))
 
-(defn play-demo [visual]
+(defn play-demo [visual audio-info]
   (let [visual (atom visual)
-        timestamp (atom 0)]
-    (sketch #(do (swap! visual visuals/update (/ (- (q/millis) @timestamp) 1000))
-                 (reset! timestamp (q/millis))
-                 (visuals/draw! @visual)))))
+        last-time (atom 0)
+        duration (:duration audio-info)]
+    (sketch #(let [current-time (/ (q/millis) 1000)]
+               (swap! visual visuals/update (- current-time @last-time))
+               (visuals/draw! @visual)
+               (reset! last-time current-time)
+               (if (> current-time duration)
+                 (q/exit))))))
 
-(defn clean-render-folder! []
+(defn clean-render-folder []
   (sh "rm" "-rf" "/tmp/theater-render"))
 
-(defn make-video [audio-path]
-  (sh "ffmpeg"
-      "-r" frame-rate
-      "-i" "/tmp/theater-render/%8d.png"
+(defn render-video [video-path audio-path]
+  (sh "ffmpeg" "-y"
+      "-r" (str frame-rate)
+      "-i" video-path
       "-i" audio-path
       "-codec:v" "libx264"
       "-codec:a" "libvorbis"
       "/tmp/test.mp4"))
 
-; TODO: call make-video from here
-(defn render-demo [audio visual]
-  (clean-render-folder!)
-  (let [visual (atom visual)]
+(defn render-demo [visual audio-info]
+  (clean-render-folder)
+  (let [visual (atom visual)
+        end-frame (* (:duration audio-info) frame-rate)]
     (sketch #(do (swap! visual visuals/update (/ 1 frame-rate))
                  (visuals/draw! @visual)
                  (q/save-frame "/tmp/theater-render/########.png")
-                 (if (> (q/frame-count) (* (:duration audio) frame-rate))
-                   (q/exit))))))
+                 (if (> (q/frame-count) end-frame)
+                   (q/exit)))))
+  (render-video "/tmp/theater-render/%8d.png" (:path audio-info)))
 
-(let [audio (load-audio-info "/tmp/select.wav")]
-  (render-demo audio [#(q/background 0)
+(let [audio-info (audio/load-info "/tmp/select.wav")]
+  (render-demo [#(q/background 0)
               #(q/stroke 255)
-              (visuals/new-scope (:frames audio))]))
+              (visuals/make-scope (audio/load-frames (:path audio-info)))]
+             audio-info))
