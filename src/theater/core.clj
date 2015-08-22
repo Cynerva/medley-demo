@@ -4,7 +4,7 @@
             [theater.audio :as audio]
             [theater.visuals :as visuals]))
 
-(def frame-rate 15)
+(def frame-rate 60)
 (def resolution [1366 768])
 
 (defn setup []
@@ -55,8 +55,11 @@
                    (q/exit)))))
   (render-video "/tmp/theater-render/%8d.png" (:path audio-info)))
 
-(let [audio-info (audio/load-info "/tmp/select.wav")]
-  (play-demo [#(q/background 0)
-              #(q/stroke 255)
-              (visuals/make-scope (audio/load-frames (:path audio-info)))]
+(let [audio-info (audio/load-info "/home/ava/wispy-wip.wav")]
+  (render-demo [#(do
+                 (q/no-stroke)
+                 (q/fill 255 255 255 64)
+                 (q/rect 0 0 (q/width) (q/height)))
+              (visuals/make-fog [128 0 255])
+              (visuals/make-scope [0 0 0 0] (audio/load-frames (:path audio-info)))]
              audio-info))
