@@ -21,15 +21,16 @@
     @finished))
 
 (defn play-demo [visual audio-info]
-  (let [visual (atom visual)
-        last-time (atom 0)
-        duration (:duration audio-info)]
-    (sketch #(let [current-time (/ (q/millis) 1000)]
-               (swap! visual visuals/update (- current-time @last-time))
-               (visuals/draw! @visual)
-               (reset! last-time current-time)
-               (if (> current-time duration)
-                 (q/exit))))))
+  (audio/with-playing (:path audio-info)
+    (let [visual (atom visual)
+          last-time (atom 0)
+          duration (:duration audio-info)]
+      (sketch #(let [current-time (/ (q/millis) 1000)]
+                 (swap! visual visuals/update (- current-time @last-time))
+                 (visuals/draw! @visual)
+                 (reset! last-time current-time)
+                 (if (> current-time duration)
+                   (q/exit)))))))
 
 (defn clean-render-folder []
   (sh "rm" "-rf" "/tmp/theater-render"))
@@ -55,7 +56,7 @@
   (render-video "/tmp/theater-render/%8d.png" (:path audio-info)))
 
 (let [audio-info (audio/load-info "/tmp/select.wav")]
-  (render-demo [#(q/background 0)
+  (play-demo [#(q/background 0)
               #(q/stroke 255)
               (visuals/make-scope (audio/load-frames (:path audio-info)))]
              audio-info))

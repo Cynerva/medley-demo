@@ -47,3 +47,11 @@
 (defn load-info [path]
   (assoc (read-info (load-stream path))
     :path path))
+
+(defn play [path]
+  (.exec (Runtime/getRuntime) (str "aplay " path)))
+
+(defmacro with-playing [path & body]
+  `(let [process# (play ~path)]
+     ~@body
+     (.destroy process#)))
