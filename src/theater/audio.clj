@@ -3,10 +3,13 @@
   (:import [java.io File]
            [javax.sound.sampled AudioSystem]))
 
-(defn load-stream [path]
+(defn load-wav-file [path]
   (let [file (File/createTempFile "theater" ".wav")]
     (sh "ffmpeg" "-i" path (.getAbsolutePath file) "-y")
-    (AudioSystem/getAudioInputStream file)))
+    file))
+
+(defn load-stream [path]
+  (AudioSystem/getAudioInputStream (load-wav-file path)))
 
 (defn bytes->uint [bytes]
   (loop [bytes (reverse bytes) sum 0]
@@ -49,7 +52,7 @@
     :path path))
 
 (defn play [path]
-  (.exec (Runtime/getRuntime) (str "aplay " path)))
+  (.exec (Runtime/getRuntime) (str "aplay " (.getAbsolutePath (load-wav-file path)))))
 
 (defmacro with-playing [path & body]
   `(let [process# (play ~path)]
