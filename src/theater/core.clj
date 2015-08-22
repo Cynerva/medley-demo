@@ -9,7 +9,7 @@
 (def sketch-draw-fn (atom #()))
 (def start-time (atom nil))
 (def start-frame (atom nil))
-(def finished (atom nil))
+(def finished (atom (promise)))
 
 (defn sketch-setup []
   (q/smooth)
@@ -22,17 +22,18 @@
   :setup sketch-setup
   :draw #(@sketch-draw-fn))
 
+(defn stop-sketch []
+  (reset! sketch-draw-fn #())
+  (deliver @finished nil))
+
 (defn start-sketch [draw-fn]
+  (stop-sketch)
   (reset! sketch-draw-fn (fn []
                            (reset! start-time (q/millis))
                            (reset! start-frame (q/frame-count))
                            (reset! sketch-draw-fn draw-fn)
                            (draw-fn)))
   (reset! finished (promise)))
-
-(defn stop-sketch []
-  (reset! sketch-draw-fn #())
-  (deliver @finished nil))
 
 (defn sketch [draw-fn]
   (start-sketch draw-fn)
