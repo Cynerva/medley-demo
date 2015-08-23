@@ -1,10 +1,12 @@
 (ns theater.core
   (:require [clojure.java.shell :refer [sh]]
             [quil.core :as q]
-            [theater.audio :as audio]
+            [theater.audio :refer [load-audio
+                                   get-audio-frames
+                                   with-audio-playing]]
             [theater.visuals :as visuals]))
 
-(def frame-rate 15)
+(def frame-rate 30)
 (def resolution [1366 768])
 (def sketch-draw-fn (atom #()))
 (def start-time (atom nil))
@@ -45,12 +47,12 @@
 (defn get-sketch-frame []
   (- (q/frame-count) @start-frame))
 
-(defn play-demo [visual audio-info]
+(defn play-demo [visual audio]
   (future
-    (audio/with-playing (:path audio-info)
+    (with-audio-playing audio
       (let [visual (atom visual)
             last-time (atom 0)
-            duration (:duration audio-info)]
+            duration (:duration audio)]
         (sketch #(let [current-time (get-sketch-time)]
                    (swap! visual visuals/update (- current-time @last-time))
                    (visuals/draw! @visual)
@@ -75,26 +77,26 @@
                "-codec:a" "libvorbis"
                "/tmp/test.mp4")))
 
-(defn render-demo [visual audio-info]
+(defn render-demo [visual audio]
   (future
     (clean-render-folder)
     (let [visual (atom visual)
-          end-frame (* (:duration audio-info) frame-rate)]
+          end-frame (* (:duration audio) frame-rate)]
       (sketch (fn []
                 (swap! visual visuals/update (/ 1 frame-rate))
                 (visuals/draw! @visual)
                 (q/save (str "/tmp/theater-render/" (get-sketch-frame) ".png"))
                 (if (> (get-sketch-frame) end-frame)
                   (stop-sketch)))))
-    (render-video "/tmp/theater-render/%d.png" (:path audio-info))))
+    (render-video "/tmp/theater-render/%d.png" (:path audio))))
 
-(let [audio-info (audio/load-info "/home/ava/music/fmtrk2/select.ogg")]
+(let [audio (load-audio "/home/ava/music/fmtrk2/select.ogg")]
   (play-demo [(fn []
                 (q/no-stroke)
                 (q/fill 255 255 255 64)
                 (q/rect 0 0 (q/width) (q/height)))
               (visuals/make-fog [128 0 255])
-              (visuals/make-scope [0 0 0] (audio/load-frames (:path audio-info)))]
-             audio-info))
+              (visuals/make-scope [0 0 0] (get-audio-frames audio))]
+             audio))
 
 ;(stop-demo)

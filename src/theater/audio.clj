@@ -3,15 +3,23 @@
   (:import [java.io File]
            [javax.sound.sampled AudioSystem]))
 
-(defn load-wav-file [path]
+(defn- path->wav-file [path]
   (let [file (File/createTempFile "theater" ".wav")]
     (sh "ffmpeg" "-i" path (.getAbsolutePath file) "-y")
     file))
 
-(defn load-stream [path]
-  (AudioSystem/getAudioInputStream (load-wav-file path)))
+(defn- stream->audio-info [stream]
+  (let [frame-rate (-> stream .getFormat .getFrameRate)]
+    {:duration (/ (.getFrameLength stream) frame-rate)
+     :frame-rate frame-rate}))
 
-(defn bytes->uint [bytes]
+(defn- file->audio-info [file]
+  (-> file
+      AudioSystem/getAudioInputStream
+      stream->audio-info
+      (assoc :path (.getAbsolutePath file))))
+
+(defn- bytes->uint [bytes]
   (loop [bytes (reverse bytes) sum 0]
     (if (seq bytes)
       (recur (rest bytes)
@@ -19,42 +27,45 @@
                 (+ (first bytes) 128)))
       sum)))
 
-(defn bytes->float [bytes]
+(defn- bytes->float [bytes]
   (/ (bytes->uint bytes)
      (Math/pow 256 (count bytes))))
 
-(defn parse-frame [sample-size bytes]
+(defn- parse-frame [sample-size bytes]
   (map bytes->float
        (partition sample-size bytes)))
 
-(defn get-sample-size [stream]
+(defn- get-sample-size [stream]
   (/ (-> stream .getFormat .getSampleSizeInBits) 8))
 
-(defn read-next-frame! [stream]
+(defn- read-next-audio-frame [stream]
   (let [bytes (byte-array (-> stream .getFormat .getFrameSize))]
     (.read stream bytes)
     (parse-frame (get-sample-size stream) bytes)))
 
-(defn read-frames! [stream]
+(defn- read-audio-frames [stream]
   (repeatedly (.getFrameLength stream)
-              #(read-next-frame! stream)))
+              #(read-next-audio-frame stream)))
 
-(defn load-frames [path]
-  (read-frames! (load-stream path)))
+(defn- path->audio-frames [path]
+  (-> path
+      File.
+      AudioSystem/getAudioInputStream
+      read-audio-frames))
 
-(defn read-info [stream]
-  (let [frame-rate (-> stream .getFormat .getFrameRate)]
-    {:duration (/ (.getFrameLength stream) frame-rate)
-     :frame-rate frame-rate}))
+(defn load-audio [path]
+  (-> path
+      path->wav-file
+      file->audio-info))
 
-(defn load-info [path]
-  (assoc (read-info (load-stream path))
-    :path path))
+(defn get-audio-frames [audio]
+  (path->audio-frames (:path audio)))
 
-(defn play [path]
-  (.exec (Runtime/getRuntime) (str "aplay " (.getAbsolutePath (load-wav-file path)))))
+(defn play-audio [audio]
+  (.exec (Runtime/getRuntime)
+         (str "aplay " (:path audio))))
 
-(defmacro with-playing [path & body]
-  `(let [process# (play ~path)]
+(defmacro with-audio-playing [audio & body]
+  `(let [process# (play-audio ~audio)]
      ~@body
      (.destroy process#)))
