@@ -20,13 +20,32 @@
   (draw-visual [this]
     (this)))
 
-(defrecord Scope [color audio-frame-rate audio-frames]
+(defrecord Animation [interval frames age]
+  Visual
+  (update-visual [this delta]
+    (let [frames (mapv #(update-visual % delta) frames)
+          new-age (+ age delta)]
+      (if (> new-age interval)
+        (Animation. interval
+                    (conj (subvec frames 1)
+                          (first frames))
+                    (- new-age interval))
+        (Animation. interval
+                    frames
+                    new-age))))
+  (draw-visual [this]
+    (draw-visual (first frames))))
+
+(defn make-animation [interval & frames]
+  (Animation. interval frames 0))
+
+(defrecord Scope [color audio-frames audio-frame-rate]
   Visual
   (update-visual [this delta]
                  (Scope. color
-                         audio-frame-rate
                          (drop (* audio-frame-rate delta)
-                               audio-frames)))
+                               audio-frames)
+                         audio-frame-rate))
   (draw-visual [this]
     (apply q/stroke color)
     (q/stroke-weight 2)
@@ -38,11 +57,11 @@
                 (inc x)
                 (* (first next-frame) (q/height)))))))
 
-(defn make-scope [color audio-frame-rate audio-frames]
-  (Scope. color audio-frame-rate audio-frames))
+(defn make-scope [color audio-frames audio-frame-rate]
+  (Scope. color audio-frames audio-frame-rate))
 
 (defn make-random-fog-circle []
-  {:radius (q/random 50 100)
+  {:radius (q/random 0 500)
    :pos (map q/random [(q/width) (q/height)])
    :vel (take 2 (repeatedly #(q/random -100 100)))
    :lifetime (q/random 1 2)
@@ -62,8 +81,8 @@
       :age (+ (:age circle) delta))))
 
 (defn get-fog-circle-color [circle color]
-  (conj (vec color)
-        (* 255
+  (conj (subvec color 0 3)
+        (* (get color 3)
            (q/sin (* (/ (:age circle)
                         (:lifetime circle))
                      q/PI)))))
@@ -81,9 +100,9 @@
     (doseq [circle circles]
       (draw-fog-circle circle color))))
 
-(defn make-fog [color]
+(defn make-fog [opts]
   (reify Visual
     (update-visual [this delta]
-      (Fog. color
-            (take 100 (repeatedly make-random-fog-circle-with-random-age))))
-    (draw-visual [this])))
+    (Fog. (:color opts)
+          (take (:count opts)
+                (repeatedly make-random-fog-circle-with-random-age))))))

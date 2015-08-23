@@ -6,6 +6,7 @@
                                    with-audio-playing]]
             [theater.visual :refer [update-visual
                                     draw-visual
+                                    make-animation
                                     make-scope
                                     make-fog]]))
 
@@ -17,7 +18,7 @@
 (def finished (atom (promise)))
 
 (defn sketch-setup []
-  (q/smooth)
+  (q/no-smooth)
   (q/frame-rate frame-rate))
 
 (q/defsketch master-sketch
@@ -95,11 +96,13 @@
 
 (let [audio (load-audio "/home/ava/music/fmtrk2/select.ogg")]
   (play-demo [(fn []
-                (q/no-stroke)
-                (q/fill 255 255 255 64)
-                (q/rect 0 0 (q/width) (q/height)))
-              (make-fog [128 0 255])
-              (make-scope [0 0 0] (:frame-rate audio) (get-audio-frames audio))]
+                (q/background 32 0 64))
+              (make-animation 5
+                              (make-scope [255 255 255]
+                                          (get-audio-frames audio)
+                                          (:frame-rate audio))
+                              (make-fog {:color [0 255 0 32]
+                                         :count 100}))]
              audio))
 
-;(stop-demo)
+(stop-demo)
