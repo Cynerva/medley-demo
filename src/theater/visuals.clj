@@ -73,13 +73,14 @@
 (defrecord Fog [color circles]
   Visual
   (update [this delta]
-    (Fog. color
-          (if (seq circles)
-            (map #(update-fog-circle % delta) circles)
-            (take 100 (repeatedly make-random-fog-circle-with-random-age)))))
+    (Fog. color (map #(update-fog-circle % delta) circles)))
   (draw! [this]
     (doseq [circle circles]
       (draw-fog-circle circle color))))
 
 (defn make-fog [color]
-  (Fog. color nil))
+  (reify Visual
+    (update [this delta]
+      (Fog. color
+            (take 100 (repeatedly make-random-fog-circle-with-random-age))))
+    (draw! [this])))
