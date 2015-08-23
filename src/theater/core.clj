@@ -99,7 +99,7 @@
                 (q/fill 255 255 255 64)
                 (q/rect 0 0 (q/width) (q/height)))
               (make-fog [128 0 255])
-              (make-scope [0 0 0] (get-audio-frames audio))]
+              (make-scope [0 0 0] (:frame-rate audio) (get-audio-frames audio))]
              audio))
 
 ;(stop-demo)

@@ -20,10 +20,13 @@
   (draw-visual [this]
     (this)))
 
-(defrecord Scope [color audio-frames]
+(defrecord Scope [color audio-frame-rate audio-frames]
   Visual
   (update-visual [this delta]
-    (Scope. color (drop (* 44100 delta) audio-frames)))
+                 (Scope. color
+                         audio-frame-rate
+                         (drop (* audio-frame-rate delta)
+                               audio-frames)))
   (draw-visual [this]
     (apply q/stroke color)
     (q/stroke-weight 2)
@@ -35,8 +38,8 @@
                 (inc x)
                 (* (first next-frame) (q/height)))))))
 
-(defn make-scope [color audio-frames]
-  (Scope. color audio-frames))
+(defn make-scope [color audio-frame-rate audio-frames]
+  (Scope. color audio-frame-rate audio-frames))
 
 (defn make-random-fog-circle []
   {:radius (q/random 50 100)
