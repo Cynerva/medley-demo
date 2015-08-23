@@ -4,10 +4,10 @@
             [theater.audio :refer [load-audio
                                    get-audio-frames
                                    with-audio-playing]]
-            [theater.visuals :refer [update-visual
-                                     draw-visual
-                                     make-scope
-                                     make-fog]]))
+            [theater.visual :refer [update-visual
+                                    draw-visual
+                                    make-scope
+                                    make-fog]]))
 
 (def frame-rate 30)
 (def resolution [1366 768])

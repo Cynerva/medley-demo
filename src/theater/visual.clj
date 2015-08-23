@@ -1,4 +1,4 @@
-(ns theater.visuals
+(ns theater.visual
   (:require [quil.core :as q]))
 
 (defprotocol Visual
