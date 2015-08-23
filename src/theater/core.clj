@@ -4,7 +4,10 @@
             [theater.audio :refer [load-audio
                                    get-audio-frames
                                    with-audio-playing]]
-            [theater.visuals :as visuals]))
+            [theater.visuals :refer [update-visual
+                                     draw-visual
+                                     make-scope
+                                     make-fog]]))
 
 (def frame-rate 30)
 (def resolution [1366 768])
@@ -54,8 +57,8 @@
             last-time (atom 0)
             duration (:duration audio)]
         (sketch #(let [current-time (get-sketch-time)]
-                   (swap! visual visuals/update (- current-time @last-time))
-                   (visuals/draw! @visual)
+                   (swap! visual update-visual (- current-time @last-time))
+                   (draw-visual @visual)
                    (reset! last-time current-time)
                    (if (> current-time duration)
                      (stop-sketch))))))))
@@ -83,8 +86,8 @@
     (let [visual (atom visual)
           end-frame (* (:duration audio) frame-rate)]
       (sketch (fn []
-                (swap! visual visuals/update (/ 1 frame-rate))
-                (visuals/draw! @visual)
+                (swap! visual update-visual (/ 1 frame-rate))
+                (draw-visual @visual)
                 (q/save (str "/tmp/theater-render/" (get-sketch-frame) ".png"))
                 (if (> (get-sketch-frame) end-frame)
                   (stop-sketch)))))
@@ -95,8 +98,8 @@
                 (q/no-stroke)
                 (q/fill 255 255 255 64)
                 (q/rect 0 0 (q/width) (q/height)))
-              (visuals/make-fog [128 0 255])
-              (visuals/make-scope [0 0 0] (get-audio-frames audio))]
+              (make-fog [128 0 255])
+              (make-scope [0 0 0] (get-audio-frames audio))]
              audio))
 
 ;(stop-demo)

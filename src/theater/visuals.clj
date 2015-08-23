@@ -2,29 +2,29 @@
   (:require [quil.core :as q]))
 
 (defprotocol Visual
-  (update [this delta])
-  (draw! [this]))
+  (update-visual [this delta])
+  (draw-visual [this]))
 
 (extend-type clojure.lang.Seqable
   Visual
-  (update [this delta]
-    (map #(update % delta) this))
-  (draw! [this]
+  (update-visual [this delta]
+    (map #(update-visual % delta) this))
+  (draw-visual [this]
     (doseq [visual this]
-      (draw! visual))))
+      (draw-visual visual))))
 
 (extend-type clojure.lang.IFn
   Visual
-  (update [this delta]
+  (update-visual [this delta]
     this)
-  (draw! [this]
+  (draw-visual [this]
     (this)))
 
 (defrecord Scope [color audio-frames]
   Visual
-  (update [this delta]
+  (update-visual [this delta]
     (Scope. color (drop (* 44100 delta) audio-frames)))
-  (draw! [this]
+  (draw-visual [this]
     (apply q/stroke color)
     (q/stroke-weight 2)
     (let [frames (take (q/width) audio-frames)]
@@ -72,15 +72,15 @@
 
 (defrecord Fog [color circles]
   Visual
-  (update [this delta]
+  (update-visual [this delta]
     (Fog. color (map #(update-fog-circle % delta) circles)))
-  (draw! [this]
+  (draw-visual [this]
     (doseq [circle circles]
       (draw-fog-circle circle color))))
 
 (defn make-fog [color]
   (reify Visual
-    (update [this delta]
+    (update-visual [this delta]
       (Fog. color
             (take 100 (repeatedly make-random-fog-circle-with-random-age))))
-    (draw! [this])))
+    (draw-visual [this])))
