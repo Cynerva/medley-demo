@@ -59,7 +59,11 @@
                "-codec:a" "libvorbis"
                "/tmp/test.mp4")))
 
-(defn play-demo [visual audio]
+(defn make-demo [audio visual]
+  {:audio audio
+   :visual visual})
+
+(defn play-demo [{audio :audio visual :visual}]
   (future
     (with-audio-playing audio
       (let [visual (atom visual)
@@ -75,7 +79,7 @@
 (defn stop-demo []
   (stop-sketch))
 
-(defn render-demo [visual audio]
+(defn render-demo [{audio :audio visual :visual}]
   (future
     (clean-render-folder)
     (let [visual (atom visual)
