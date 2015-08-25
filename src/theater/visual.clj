@@ -20,6 +20,13 @@
   (draw-visual [this]
     (this)))
 
+(extend-type clojure.lang.IDeref
+  Visual
+  (update-visual [this delta]
+    (update-visual @this delta))
+  (draw-visual [this]
+    (draw-visual @this)))
+
 (defrecord Animation [interval frames age]
   Visual
   (update-visual [this delta]
@@ -101,8 +108,7 @@
       (draw-fog-circle circle color))))
 
 (defn make-fog [opts]
-  (reify Visual
-    (update-visual [this delta]
-    (Fog. (:color opts)
-          (take (:count opts)
-                (repeatedly make-random-fog-circle-with-random-age))))))
+  (delay
+   (Fog. (:color opts)
+         (take (:count opts)
+               (repeatedly make-random-fog-circle-with-random-age)))))
