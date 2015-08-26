@@ -6,9 +6,9 @@
                                   render-demo]]
             [theater.audio :refer [load-audio
                                    get-audio-frames]]
-            [theater.visual :refer [make-animation
-                                    make-scope
-                                    make-fog]]))
+            [theater.visual :refer [make-scope
+                                    make-fog]]
+            [theater.animation :refer [make-animation]]))
 
 (defn make-test-demo []
   (let [audio (load-audio "/home/ava/music/fmtrk2/select.ogg")]

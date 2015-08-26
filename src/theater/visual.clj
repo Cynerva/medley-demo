@@ -27,25 +27,6 @@
   (draw-visual [this]
     (draw-visual @this)))
 
-(defrecord Animation [interval frames age]
-  Visual
-  (update-visual [this delta]
-    (let [frames (mapv #(update-visual % delta) frames)
-          new-age (+ age delta)]
-      (if (> new-age interval)
-        (Animation. interval
-                    (conj (subvec frames 1)
-                          (first frames))
-                    (- new-age interval))
-        (Animation. interval
-                    frames
-                    new-age))))
-  (draw-visual [this]
-    (draw-visual (first frames))))
-
-(defn make-animation [interval & frames]
-  (Animation. interval frames 0))
-
 (defrecord Scope [color audio-frames audio-frame-rate]
   Visual
   (update-visual [this delta]
