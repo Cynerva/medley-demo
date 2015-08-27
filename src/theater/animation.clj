@@ -3,21 +3,19 @@
                                     update-visual
                                     draw-visual]]))
 
-(defrecord Animation [interval frames age]
+(defrecord Timeline [age visuals]
   Visual
   (update-visual [this delta]
-    (let [frames (mapv #(update-visual % delta) frames)
-          new-age (+ age delta)]
-      (if (> new-age interval)
-        (Animation. interval
-                    (conj (subvec frames 1)
-                          (first frames))
-                    (- new-age interval))
-        (Animation. interval
-                    frames
-                    new-age))))
+    (Timeline. (+ age delta)
+               (mapv #(vector (first %)
+                              (update-visual (second %)
+                                             delta))
+                     visuals)))
   (draw-visual [this]
-    (draw-visual (first frames))))
+    (draw-visual (->> visuals
+                      (filter #(>= age (first %)))
+                      last
+                      second))))
 
-(defn make-animation [interval & frames]
-  (Animation. interval frames 0))
+(defn make-timeline [& args]
+  (Timeline. 0 (partition 2 args)))
