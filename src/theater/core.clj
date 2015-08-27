@@ -18,8 +18,8 @@
                         0 (make-scope [255 255 255]
                                       (get-audio-frames audio)
                                       (:frame-rate audio))
-                        4 (make-fog {:color [0 255 0 32]
-                                     :count 100}))])))
+                        4 (make-fog {:color [0 255 0 128]
+                                     :count 10}))])))
 
 (play-demo (make-test-demo))
 
