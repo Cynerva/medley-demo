@@ -4,18 +4,8 @@
   (:require [quil.core :as q]
             [theater.visual :refer [Visual
                                     update-visual
-                                    draw-visual]]))
-
-(defmacro with-tint [color & body]
-  `(let [graphics# (q/create-graphics (q/width) (q/height))]
-    (q/with-graphics graphics#
-      (q/background 0 0 0 0)
-      ~@body)
-    (q/tint ~@color)
-    (q/image graphics# 0 0)))
-
-(defmacro with-alpha [alpha & body]
-  `(with-tint [255 255 255 ~alpha] ~@body))
+                                    draw-visual
+                                    with-alpha]]))
 
 (defmulti draw-transition (fn [transition-type weight a b]
                             transition-type))
