@@ -6,13 +6,16 @@
                                     update-visual
                                     draw-visual]]))
 
-(defmacro with-alpha [alpha & body]
+(defmacro with-tint [color & body]
   `(let [graphics# (q/create-graphics (q/width) (q/height))]
     (q/with-graphics graphics#
       (q/background 0 0 0 0)
       ~@body)
-    (q/tint 255 255 255 ~alpha)
+    (q/tint ~@color)
     (q/image graphics# 0 0)))
+
+(defmacro with-alpha [alpha & body]
+  `(with-tint [255 255 255 ~alpha] ~@body))
 
 (defmulti draw-transition (fn [transition-type weight a b]
                             transition-type))
