@@ -49,7 +49,7 @@
                       (first remainder)
                       (rest remainder)))))))
 
-(deftransition identity-transition [weight a b]
+(deftransition no-transition [weight a b]
   (draw-visual a))
 
 (defn make-timeline [& args]
@@ -62,5 +62,5 @@
                  (conj transitions event))
           (recur (rest events)
                (conj visuals event)
-               (conj transitions [(first event) identity-transition]))))
+               (conj transitions [(first event) no-transition]))))
       (Timeline. 0 visuals transitions))))

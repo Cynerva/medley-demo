@@ -22,8 +22,19 @@
 (defmacro with-alpha [alpha & body]
   `(with-tint [255 255 255 ~alpha] ~@body))
 
-(deftransition fade-transition [weight a b]
+(deftransition fade [weight a b]
   (with-alpha (* 255 (- 1 weight))
     (draw-visual a))
   (with-alpha (* 255 weight)
     (draw-visual b)))
+
+(deftransition fade-blank [weight a b]
+  (if (< weight 0.5)
+    (draw-transition fade
+                     (* weight 2)
+                     a
+                     #())
+    (draw-transition fade
+                     (dec (* weight 2))
+                     #()
+                     b)))
