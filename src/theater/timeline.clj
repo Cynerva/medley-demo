@@ -5,7 +5,9 @@
             [theater.visual :refer [Visual
                                     update-visual
                                     draw-visual]]
-            [theater.transitions :refer [draw-transition]]))
+            [theater.transitions :refer [Transition
+                                         draw-transition
+                                         deftransition]]))
 
 (defn get-transition-weight [age transitions]
   (loop [previous [0 nil]
@@ -47,15 +49,18 @@
                       (first remainder)
                       (rest remainder)))))))
 
+(deftransition identity-transition [weight a b]
+  (draw-visual a))
+
 (defn make-timeline [& args]
   (loop [events (partition 2 args) visuals [] transitions []]
     (if (seq events)
       (let [event (first events)]
-        (if (-> event second keyword?)
+        (if (->> event second (satisfies? Transition))
           (recur (rest events)
                  visuals
                  (conj transitions event))
           (recur (rest events)
                (conj visuals event)
-               (conj transitions [(first event) nil]))))
+               (conj transitions [(first event) identity-transition]))))
       (Timeline. 0 visuals transitions))))
