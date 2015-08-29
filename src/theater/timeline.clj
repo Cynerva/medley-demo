@@ -1,6 +1,6 @@
 ; NOTE: this file is a horrible mess and needs to be cleaned up
 
-(ns theater.animation
+(ns theater.timeline
   (:require [quil.core :as q]
             [theater.visual :refer [Visual
                                     update-visual

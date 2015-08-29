@@ -8,7 +8,7 @@
                                    get-audio-frames]]
             [theater.visual :refer [make-scope
                                     make-fog]]
-            [theater.animation :refer [make-timeline]]))
+            [theater.timeline :refer [make-timeline]]))
 
 (defn make-test-demo []
   (let [audio (load-audio "/home/ava/music/fmtrk2/select.ogg")]
