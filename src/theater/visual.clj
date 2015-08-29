@@ -27,17 +27,6 @@
   (draw-visual [this]
     (draw-visual @this)))
 
-(defmacro with-tint [color & body]
-  `(let [graphics# (q/create-graphics (q/width) (q/height))]
-    (q/with-graphics graphics#
-      (q/background 0 0 0 0)
-      ~@body)
-    (q/tint ~@color)
-    (q/image graphics# 0 0)))
-
-(defmacro with-alpha [alpha & body]
-  `(with-tint [255 255 255 ~alpha] ~@body))
-
 (defrecord Scope [color audio-frames audio-frame-rate]
   Visual
   (update-visual [this delta]

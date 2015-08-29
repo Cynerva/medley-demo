@@ -4,20 +4,8 @@
   (:require [quil.core :as q]
             [theater.visual :refer [Visual
                                     update-visual
-                                    draw-visual
-                                    with-alpha]]))
-
-(defmulti draw-transition (fn [transition-type weight a b]
-                            transition-type))
-
-(defmethod draw-transition nil [_ weight a b]
-  (draw-visual a))
-
-(defmethod draw-transition :fade [_ weight a b]
-  (with-alpha (* 255 (- 1 weight))
-    (draw-visual a))
-  (with-alpha (* 255 weight)
-    (draw-visual b)))
+                                    draw-visual]]
+            [theater.transitions :refer [draw-transition]]))
 
 (defn get-transition-weight [age transitions]
   (loop [previous [0 nil]
