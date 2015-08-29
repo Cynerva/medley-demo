@@ -13,6 +13,7 @@
 (defmacro with-tint [color & body]
   `(let [graphics# (q/create-graphics (q/width) (q/height))]
     (q/with-graphics graphics#
+      (q/no-smooth) ; FIXME: no-smooth should be abstracted out of with-tint
       (q/background 0 0 0 0)
       ~@body)
     (q/tint ~@color)
