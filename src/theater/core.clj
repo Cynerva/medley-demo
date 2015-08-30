@@ -21,7 +21,7 @@
    784/3 "gummy bears on the run"
    880/3 "here, together, we are strong"])
 
-(def console-font (delay (q/create-font "DejaVu Sans Mono" 50)))
+(def console-font (delay (q/create-font "DejaVu Sans Mono" 38)))
 
 (def console-height 100)
 
