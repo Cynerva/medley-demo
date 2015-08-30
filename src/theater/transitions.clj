@@ -5,10 +5,13 @@
 (defprotocol Transition
   (draw-transition [this weight a b]))
 
+(defmacro make-transition [args & body]
+  `(reify Transition
+     (draw-transition [this# ~@args]
+        ~@body)))
+
 (defmacro deftransition [name args & body]
-  `(def ~name (reify Transition
-                (draw-transition [this# ~@args]
-                  ~@body))))
+  `(def ~name (make-transition ~args ~@body)))
 
 (defmacro with-tint [color & body]
   `(let [graphics# (q/create-graphics (q/width) (q/height))]
@@ -28,13 +31,18 @@
   (with-alpha (* 255 weight)
     (draw-visual b)))
 
-(deftransition fade-blank [weight a b]
-  (if (< weight 0.5)
-    (draw-transition fade
-                     (* weight 2)
-                     a
-                     #())
-    (draw-transition fade
-                     (dec (* weight 2))
-                     #()
-                     b)))
+(defn make-fade-through [intermediate]
+  (make-transition [weight a b]
+    (if (< weight 0.5)
+      (draw-transition fade
+                       (* weight 2)
+                       a
+                       intermediate)
+      (draw-transition fade
+                       (dec (* weight 2))
+                       intermediate
+                       b))))
+
+(def fade-blank (make-fade-through #()))
+
+(def fade-white (make-fade-through #(q/background 255 255 255)))
