@@ -9,30 +9,82 @@
             [theater.visual :refer [make-scope
                                     make-fog]]
             [theater.timeline :refer [make-timeline]]
-            [theater.transitions :refer [fade
-                                         fade-blank]]))
+            [theater.transitions :refer [fade-blank]]))
+
+(def titles
+  [0 "animus"
+   128/3 "boxytron 5"
+   256/3 "crystal science"
+   384/3 "definite disorder"
+   512/3 "esther's wasteland"
+   640/3 "friendly flabebe"
+   784/3 "gummy bears on the run"
+   880/3 "here, together, we are strong"])
+
+(def console-font (delay (q/create-font "DejaVu Sans Mono" 50)))
+
+(def console-height 100)
+
+(defn draw-console-back []
+  (q/no-stroke)
+  (q/fill 32 0 32)
+  (q/rect 0 0 (q/width) console-height)
+
+  (q/stroke 64 0 64)
+  (q/stroke-weight 1)
+  (q/no-fill)
+  (doseq [x (range 0 (q/width) 20)]
+    (q/line x 0 x console-height))
+  (doseq [y (range 0 console-height 20)]
+    (q/line 0 y (q/width) y))
+
+  (q/stroke 96 96 96)
+  (q/stroke-weight 2)
+  (q/no-fill)
+  (let [x (/ (q/width) 2)]
+    (q/line x 0 x console-height))
+  (q/line 0 console-height (q/width) console-height))
+
+(defn draw-title [title]
+  (q/fill 128 0 128)
+  (q/text-font @console-font)
+  (q/text-align :center :center)
+  (q/text title (/ (q/width) 4) 44))
+
+(defn make-console-title-display []
+  (apply make-timeline
+         (->> titles
+              (partition 2)
+              (map (fn [[start title]]
+                     [(- start 1/3) fade-blank
+                      start #(draw-title title)]))
+              flatten)))
+
+(defn make-console-scope [audio]
+  [(fn []
+     (q/stroke 128 0 128)
+     (q/stroke-weight 2)
+     (q/no-fill)
+     (q/push-matrix)
+     (q/scale 0.5 (/ console-height (q/height)))
+     (q/translate (q/width) 0))
+   (make-scope [128 0 128]
+               (get-audio-frames audio)
+               (:frame-rate audio))
+   #(q/pop-matrix)])
+
+(defn make-console [audio]
+  [draw-console-back
+   (make-console-title-display)
+   (make-console-scope audio)])
 
 (defn make-test-demo []
-  (let [audio (load-audio "/home/ava/music/fmtrk2/select.ogg")]
-    (make-demo audio [#(q/background 32 0 64)
-                      (make-timeline
-                        0 (make-scope [255 255 255]
-                                      (get-audio-frames audio)
-                                      (:frame-rate audio))
-                        5 fade
-                        10 (make-fog {:color [0 255 0 128]
-                                     :count 10}))
-                      (make-timeline
-                       0 #()
-                       1 fade
-                       2 #(q/text "Text example" 100 100)
-                       5 fade-blank
-                       7 #(q/text "DUDE JESSIE" 1000 600)
-                       9 fade-blank
-                       11 #(doseq [x (range 0 (q/width) 200) y (range 0 (q/height) 50)]
-                             (q/text "BREAKFAST CORNDOGS" x y))
-                       19 fade
-                       27 #())])))
+  (let [audio (load-audio "/home/ava/lmms/projects/Medley/Medley WIP.flac")]
+    (make-demo audio
+               [#(q/background 0 0 0)
+                (make-fog {:color [128 0 128 32]
+                           :count 50})
+                (make-console audio)])))
 
 (play-demo (make-test-demo))
 
