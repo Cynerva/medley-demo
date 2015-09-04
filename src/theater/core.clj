@@ -78,14 +78,16 @@
    (make-console-title-display)
    (make-console-scope audio)])
 
-(defn make-test-demo []
-  (let [audio (load-audio "/home/ava/lmms/projects/Medley/Medley WIP.flac")]
-    (make-demo audio
-               [#(q/background 0 0 0)
-                (make-fog {:color [128 0 128 32]
-                           :count 50})
-                (make-console audio)])))
+(defn make-medley-visual [audio]
+  [#(q/background 0 0 0)
+   (make-fog {:color [128 0 128 32]
+              :count 50})
+   (make-console audio)])
 
-(play-demo (make-test-demo))
+(defn make-medley-demo []
+  (let [audio (load-audio "/home/ava/lmms/projects/Medley/Medley WIP.flac")]
+    (make-demo audio (make-medley-visual audio))))
+
+(play-demo (make-medley-demo))
 
 (stop-demo)
