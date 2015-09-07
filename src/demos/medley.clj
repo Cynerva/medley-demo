@@ -1,4 +1,4 @@
-(ns theater.core
+(ns demos.medley
   (:require [quil.core :as q]
             [theater.demo :refer [make-demo
                                   play-demo
@@ -80,7 +80,7 @@
 
 (defn make-medley-visual [audio]
   [#(q/background 0 0 0)
-   (make-fog {:color [128 0 128 32]
+   (make-fog {:color [0 0 255 32]
               :count 50})
    (make-console audio)])
 
@@ -88,6 +88,15 @@
   (let [audio (load-audio "/home/ava/lmms/projects/Medley/Medley WIP.flac")]
     (make-demo audio (make-medley-visual audio))))
 
-(play-demo (make-medley-demo))
+; Repl stuffs
 
-(stop-demo)
+(defn refresh []
+  (require ['demos.medley :reload true]))
+
+(defn play []
+  (play-demo (make-medley-demo)))
+
+(defn render []
+  (render-demo (make-medley-demo)))
+
+(def stop stop-demo)
