@@ -36,7 +36,6 @@
                          audio-frame-rate))
   (draw-visual [this]
     (apply q/stroke color)
-    (q/stroke-weight 2)
     (let [frames (take (q/width) audio-frames)]
       (doseq [[x [frame next-frame]] (->> (map vector frames (rest frames))
                                           (map-indexed vector))]
@@ -83,6 +82,7 @@
 (defrecord Fog [color circles]
   Visual
   (update-visual [this delta]
+    (q/random-seed (q/millis))
     (Fog. color (map #(update-fog-circle % delta) circles)))
   (draw-visual [this]
     (doseq [circle circles]

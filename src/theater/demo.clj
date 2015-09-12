@@ -56,7 +56,9 @@
                "-i" video-path
                "-i" audio-path
                "-codec:v" "libx264"
+               "-crf" "18"
                "-codec:a" "libvorbis"
+               "-qscale:a" "5"
                "/tmp/test.mp4")))
 
 (defn make-demo [audio visual]
